@@ -1,0 +1,114 @@
+LIBNETPGPVERIFY(3)      NetBSD Library Functions Manual     LIBNETPGPVERIFY(3)
+
+NNAAMMEE
+     lliibbnneettppggppvveerriiffyy -- library to verify digital signatures
+
+LLIIBBRRAARRYY
+     Netpgp Signature Verification (libnetpgpverify, -lnetpgpverify)
+
+SSYYNNOOPPSSIISS
+     ##iinncclluuddee <<nneettppggpp//vveerriiffyy..hh>>
+
+     _i_n_t
+     ppggppvv__nneeww(_v_o_i_d);
+
+     _i_n_t
+     ppggppvv__nneeww__ccuurrssoorr(_v_o_i_d);
+
+     _i_n_t
+     ppggppvv__rreeaadd__ppuubbrriinngg(_p_g_p_v___t _*_p_g_p, _c_o_n_s_t _v_o_i_d _*_k_e_y_r_i_n_g, _s_s_i_z_e___t _s_i_z_e);
+
+     _i_n_t
+     ppggppvv__rreeaadd__sssshh__ppuubbkkeeyyss(_p_g_p_v___t _*_p_g_p, _c_o_n_s_t _v_o_i_d _*_k_e_y_r_i_n_g, _s_s_i_z_e___t _s_i_z_e);
+
+     _s_i_z_e___t
+     ppggppvv__vveerriiffyy(_p_g_p_v___c_u_r_s_o_r___t _*_c_u_r_s_o_r, _p_g_p_v___t _*_p_g_p, _c_o_n_s_t _v_o_i_d _*_p_t_r,
+         _s_s_i_z_e___t _s_i_z_e);
+
+     _s_i_z_e___t
+     ppggppvv__ggeett__vveerriiffiieedd(_p_g_p_v___c_u_r_s_o_r___t _*_c_u_r_s_o_r, _s_i_z_e___t _c_o_o_k_i_e, _c_h_a_r _*_*_r_e_t);
+
+     _s_i_z_e___t
+     ppggppvv__ggeett__ccuurrssoorr__eelleemmeenntt(_p_g_p_v___c_u_r_s_o_r___t _*_c_u_r_s_o_r, _s_i_z_e___t _e_l_e_m_e_n_t);
+
+     _s_i_z_e___t
+     ppggppvv__dduummpp(_p_g_p_v___t _*_p_g_p, _c_h_a_r _*_*_d_a_t_a);
+
+     _s_i_z_e___t
+     ppggppvv__ggeett__eennttrryy(_p_g_p_v___t _*_p_g_p, _u_n_s_i_g_n_e_d _e_n_t, _c_h_a_r _*_*_r_e_t,
+         _c_o_n_s_t _c_h_a_r _*_m_o_d_i_f_i_e_r_s);
+
+     _i_n_t_6_4___t
+     ppggppvv__ggeett__ccuurrssoorr__nnuumm(_p_g_p_v___t _*_p_g_p, _c_o_n_s_t _c_h_a_r _*_f_i_e_l_d);
+
+     _c_h_a_r _*
+     ppggppvv__ggeett__ccuurrssoorr__ssttrr(_p_g_p_v___t _*_p_g_p, _c_o_n_s_t _c_h_a_r _*_f_i_e_l_d);
+
+     _i_n_t
+     ppggppvv__cclloossee(_p_g_p_v___t _*_p_g_p);
+
+DDEESSCCRRIIPPTTIIOONN
+     lliibbnneettppggppvveerriiffyy is a small library which will verify a digital signature
+     on a text or binary document.  It has been kept deliberately small and
+     only uses compression libraries to function.
+
+     PGP messages, including key rings, are made up of PGP packets, defined in
+     RFC 4880.  To match a digital signature, the public key of the signer
+     must be located in a public key ring.  This library has enough function-
+     ality to parse a pubkey keyring, using ppggppvv__rreeaadd__ppuubbrriinngg() to read the
+     public keys of trusted identities, and to read files or memory which has
+     already been signed.  SSH public keys can also be used for signature ver-
+     ification by using the ppggppvv__rreeaadd__sssshh__ppuubbkkeeyyss() function.  Please note
+     that the creation date of the signature key will show up as January 1st
+     1970, due to the fact that the creation date of the key is not encoded
+     anywhere for an ssh key, whilst it is an inherent part of the PGP finger-
+     print.  In order that the correct fingerprint is used, the key creation
+     date is forced to 0.
+
+     The ppggppvv__vveerriiffyy() function is used to verify the signature, either on
+     data, or on memory.  To signal to ppggppvv__vveerriiffyy() to read a file and verify
+     it, the size argument should be set to -1 whilst a positive size signals
+     that the pointer value should be that of signed memory.  ppggppvv__vveerriiffyy()
+     returns a cookie if the ignature was verified, or 0 if it did not.  This
+     cookie can subsequently be used to retrieve the data which was verified.
+
+     If the signature does match, then the file or memory can be considered as
+     being verified as being unmodified and unchanged, integrally sound.
+
+     Signatures have validity dates on them, and it is possible for a signa-
+     ture to have expired when it is being checked.  If for any reason the
+     signature does not match, then the reason for not verifying the signature
+     will be stored in the why buffer in the pgpv_cursor_t structure.
+
+     Occasionally, the memory or contents of the file which matched the signa-
+     ture will be needed, rather than a boolean value of whether it was veri-
+     fied.  To do this, the ppggppvv__ggeett__vveerriiffiieedd() function is used.  Arguments
+     to ppggppvv__ggeett__vveerriiffiieedd() are the cookie returned from the verification, and
+     a buffer allocated for the returned data and its size.  If an error
+     occurs, or the signature is not verified, a zero value is returned for
+     the size.  lliibbnneettppggppvveerriiffyy stores the starts of the data of all verified
+     matches, and so the entry number argument is the index of the occurrence
+     of verification.  The first match will have an entry number of 0, the
+     second 1, and so on.
+
+     The ppggppvv__cclloossee() function is used to clean up after all matching and ver-
+     ification has taken place.  It frees and de-allocates all resources used
+     in the verification of the signature.
+
+     The program used for signing may encode into base64 encoding, and it may
+     also use embedded compression to make the output smaller than it would
+     otherwise be.  This is handled automatically by lliibbnneettppggppvveerriiffyy
+
+SSEEEE AALLSSOO
+     bn(3), zlib(3)
+
+SSTTAANNDDAARRDDSS
+     The lliibbnneettppggppvveerriiffyy utility is designed to conform to IETF RFC 4880.
+
+HHIISSTTOORRYY
+     The lliibbnneettppggppvveerriiffyy library first appeared in NetBSD 7.0.
+
+AAUUTTHHOORRSS
+     Alistair Crooks <_a_g_c_@_N_e_t_B_S_D_._o_r_g>
+
+NetBSD 9.4                       June 26, 2016                      NetBSD 9.4
